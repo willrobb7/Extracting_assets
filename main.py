@@ -7,8 +7,10 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 logger = logging.getLogger(__name__)
-domain = "infinityworkssandbox"
-bamboo_api_key = "d69af137944291726d0b55e5fc3bb4a7e381bbe3"
+logger = logging.getLogger(__name__)
+domain = "infinityworks"
+# bamboo_api_key = "" #Sandbox
+bamboo_api_key = "" #Live
 bamboo_auth = HTTPBasicAuth(bamboo_api_key, "x")
 
 default_headers = {
@@ -21,6 +23,7 @@ def main():
     employees = get_employee_directory()
     data = []
     list_of_assets = []
+    is_laptop = []
 
     with open('myCsv.csv', 'w', newline='') as f: #Opens a CSV file with the headers of Serial Number and Asset Tag
         thewriter = csv.writer(f)
@@ -32,20 +35,43 @@ def main():
         user_id = employee.get("id")
         assets = get_assets(user_id)
 
-        if len(assets) == 1:
-            inner_assets = assets[0]
-            object_of_assets = inner_assets[0]
+        if len(assets) > 0:
+                inner_assets = assets[0]
+                if len(inner_assets) > 0:
+                    # print(inner_assets)
 
+                    for asset in inner_assets:
+                        # print(asset)
+                        for key in asset:
 
-            for key in object_of_assets:
-                if key == 'customSerial#1' or key == 'customAssetNumber':
-                    data.append(object_of_assets[key])
+                            if key == 'customAssetcategory1':
+                                is_laptop.append(asset[key])
+                                # print(is_laptop)
+                                if is_laptop[0] != 'Laptop':
+                                    print("Not Exporting asset, as it is not Laptop")
+                                    is_laptop.pop(0)
+                                    continue
+                                else :
+                                    for key in asset:
+                                        if key == 'customSerial#1' or key == 'customAssetNumber':
+                                            data.append(asset[key])
+                                            # data_list = list(data)
+                                            if len(is_laptop) > 0:
+                                                is_laptop.pop(0)
+                                        # print(data)
+                                        if len(data) > 2:
+                                            data.pop(0)
+                                        if len(data) > 2:
+                                            data.pop(0)
+                                        if len(data) > 2:
+                                            data.pop(0)
+                                        # print(data)
+                                        data_list = list(data)
 
-            data_list = list(data)
-            data.pop(0)
-            data.pop(0)
-            list_of_assets.append(data_list)
-            print("Asset ready to be exported")
+                                    list_of_assets.append(data_list)
+                                    # print (list_of_assets)
+                                    print("Asset ready to be exported")
+
         else:
             print("No assets available")
 
